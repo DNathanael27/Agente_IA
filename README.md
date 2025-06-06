@@ -48,7 +48,7 @@ Siga os passos abaixo para executar o projeto.
 
 * **Docker** e **Docker Compose** instalados.
 * Uma **API Key do Google AI Studio** para usar o Gemini. Você pode obter uma [aqui](https://makersuite.google.com/app/apikey).
-* Uma sessão do **WAHA** autenticada com um número de WhatsApp.
+* Um número de WhatsApp para ser usado pelo bot.
 
 ### 1. Crie o arquivo `.env`
 
@@ -89,7 +89,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d <span class="math-inline">\{POSTGRES\_DB\}"\]
 interval\: 5s
 timeout\: 5s
-retries\:</13\> 10
+retries\:</18\> 10
 redis\:
 image\: redis\:latest
 container\_name\: redis\_cache
@@ -99,12 +99,12 @@ volumes\:
 n8n\:
 image\: n8nio/n8n\:latest
 container\_name\: n8n\_workflow
-<14\>restart\: always
+<19\>restart\: always
 ports\:
 \- "5678\:5678"
 environment\:
 \- DB\_TYPE\=postgresdb
-\- <15\>DB\_POSTGRESDB\_HOST\=postgres
+\- <20\>DB\_POSTGRESDB\_HOST\=postgres
 \- DB\_POSTGRESDB\_PORT\=5432
 \- DB\_POSTGRESDB\_DATABASE\=</span>{POSTGRES_DB}
       - DB_POSTGRESDB_USER=<span class="math-inline">\{POSTGRES\_USER\}
@@ -157,14 +157,14 @@ Após a execução, você pode:
 
 ### 4. Configure o Workflow no N8N
 
-1.  Acesse o N8N e crie um novo workflow.
-2.  Crie um nó de **Webhook**. Ele irá gerar uma URL de teste e uma de produção. Use a URL de produção na variável `WAHA_WEBHOOK_URL` (lembre-se de trocar `localhost` pelo nome do serviço `n8n`, como no exemplo).
-3.  Adicione um nó do **Google Gemini** e configure-o com sua API Key.
-4.  Adicione um nó de **PostgreSQL** para salvar os dados no banco.
+1.  Acesse o N8N, crie sua conta de administrador e inicie um novo workflow.
+2.  Crie um nó de **Webhook**. Ele irá gerar uma URL de teste e uma de produção. Use a URL de produção na variável `WAHA_WEBHOOK_URL` do `docker-compose.yml` (lembre-se de que o webhook deve usar o nome do serviço `n8n`, como no exemplo).
+3.  Adicione um nó do **Google Gemini** e configure-o com sua API Key em *Credentials*.
+4.  Adicione um nó de **PostgreSQL** para salvar os dados no banco. Use as credenciais do seu arquivo `.env` e o nome do host `postgres`.
 5.  Adicione um nó **HTTP Request** para enviar a resposta de volta para a API do WAHA.
 
 ---
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+Este projeto está sob a licença MIT. Sinta-se à vontade para usar e modificar o código.
