@@ -19,37 +19,17 @@ O objetivo deste projeto é criar um chatbot inteligente no WhatsApp. Quando um 
 
 ---
 
-## ⚙️ Como Funciona
-
-O fluxo de dados da aplicação segue os seguintes passos:
-
-1.  O **Usuário** envia uma mensagem para o número de WhatsApp configurado.
-2.  O contêiner **WAHA** recebe a mensagem e a envia para o webhook do N8N através do `host.docker.internal`.
-3.  O **N8N** recebe a notificação via webhook e inicia o workflow.
-4.  O nó do **Google Gemini** no N8N é acionado, enviando a mensagem do usuário para a IA.
-5.  A **IA do Google** processa a entrada e gera uma resposta.
-6.  O N8N envia a resposta gerada de volta para a API **WAHA**.
-7.  A WAHA encaminha a resposta para o **Usuário** no WhatsApp.
-
-```
-Usuário ↔️ WhatsApp ↔️ WAHA ↔️ N8N (com SQLite) ↔️ Google Gemini AI
-```
-
----
-
 ## 🚀 Instalação e Configuração
-
-Siga os passos abaixo para executar o projeto.
 
 ### Pré-requisitos
 
-* **Docker** e **Docker Compose** instalados (versões recentes são recomendadas).
+* **Docker** e **Docker Compose** instalados.
 * Uma **API Key do Google AI Studio** para usar o Gemini. Você pode obter uma [aqui](https://makersuite.google.com/app/apikey).
 * Um número de WhatsApp para ser usado pelo bot.
 
 ### 1. Crie o arquivo `docker-compose.yml`
 
-Crie o arquivo `docker-compose.yml` na raiz do projeto com o seguinte conteúdo que você forneceu:
+Crie o arquivo `docker-compose.yml` na raiz do projeto com o seguinte conteúdo:
 
 ```yaml
 version: '3.8'
@@ -88,4 +68,49 @@ services:
       - waha_sessions:/app/.sessions
       - waha_media:/app/.media
     ports:
-      - "3000:30
+      - "3000:3000"
+
+  n8n:
+    image: n8nio/n8n:latest
+    platform: linux/amd64
+    environment:
+      WEBHOOK_URL: [http://host.docker.internal:5678](http://host.docker.internal:5678)
+      N8N_HOST: host.docker.internal
+      GENERIC_TIMEZONE: America/Sao_Paulo
+      N8N_LOG_LEVEL: debug
+      N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE: true
+    volumes:
+      - n8n_data:/home/node/.n8n
+    ports:
+      - "5678:5678"
+
+volumes:
+  pgdata:
+  waha_sessions:
+  waha_media:
+  n8n_data:
+```
+
+### 2. Execute o Projeto
+
+Com o arquivo `docker-compose.yml` criado, execute o seguinte comando no seu terminal:
+
+```bash
+# Inicia todos os contêineres em segundo plano
+docker-compose up -d
+```
+
+### 3. Próximos Passos
+
+1.  **Acesse o WAHA:** Navegue até `http://localhost:3000` para conectar seu número de WhatsApp escaneando o QR Code através do endpoint `/api/sessions/start`.
+2.  **Acesse o N8N:** Navegue até `http://localhost:5678` para criar sua conta de administrador e começar a construir seu fluxo de trabalho.
+3.  **Construa o Workflow:**
+    * Crie um nó **Webhook** para receber os dados do WAHA (o caminho da URL deve ser `/webhook/webhook`).
+    * Adicione um nó **Google Gemini**, insira suas credenciais e configure o prompt e a entrada de texto.
+    * Adicione um nó **HTTP Request** para enviar a resposta do Gemini de volta para o usuário através da API do WAHA.
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Sinta-se à vontade para usar e modificar o código.
